@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Stellarmap — GitHub Universe</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body data-theme="white">
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SPLASH SCREEN
+═══════════════════════════════════════════════════════════════ -->
+<div id="splash">
+  <div id="splash-scanlines"></div>
+  <div id="splash-particles"></div>
+  <div id="splash-orbit">
+    <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="60" cy="60" rx="54" ry="22" stroke="#2d6480" stroke-width="1"/>
+      <circle cx="114" cy="60" r="4" fill="#5bc8f5"/>
+    </svg>
+    <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="60" cy="60" rx="38" ry="54" stroke="#1a3d54" stroke-width="0.8" transform="rotate(30 60 60)"/>
+      <circle cx="87" cy="106" r="3" fill="#3a9bbf"/>
+    </svg>
+    <div id="splash-core">◈</div>
+  </div>
+  <div id="splash-logo">STELLARMAP</div>
+  <div id="splash-tagline">github universe explorer</div>
+  <div id="splash-choices">
+    <button class="splash-btn splash-btn-primary" id="launch-btn" onclick="launchSequence()">
+      <span id="ship-wrap">
+        <svg class="ship-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C12 2 7 8 7 14H17C17 8 12 2 12 2Z" fill="#5bc8f5" opacity="0.9"/>
+          <path d="M9 14H15L14 19H10L9 14Z" fill="#3a9bbf"/>
+          <path d="M8 15L5 18L7 18L9 16Z" fill="#3a9bbf" opacity="0.7"/>
+          <path d="M16 15L19 18L17 18L15 16Z" fill="#3a9bbf" opacity="0.7"/>
+          <circle cx="12" cy="10" r="2" fill="#a8d4e8"/>
+        </svg>
+        <span id="launch-label">LAUNCH SATELLITE</span>
+      </span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MAIN APP
+═══════════════════════════════════════════════════════════════ -->
+<div id="root">
+  <canvas id="gc"></canvas>
+  <div id="ui">
+
+    <!-- HEADER -->
+    <div id="header">
+      <div id="logo">
+        <svg width="17" height="17" viewBox="0 0 18 18" fill="none">
+          <circle cx="9" cy="9" r="2.5" fill="#5bc8f5"/>
+          <ellipse cx="9" cy="9" rx="8" ry="3.5" stroke="#2d6480" stroke-width="0.8" fill="none"/>
+          <ellipse cx="9" cy="9" rx="5.5" ry="8" stroke="#1a3d54" stroke-width="0.8" fill="none" transform="rotate(45 9 9)"/>
+        </svg>
+        STELLARMAP
+      </div>
+      <div id="subtitle">map the cosmos of code · every contributor a sun</div>
+      <div class="sr">
+        <input id="uinput" type="text" placeholder="search username or org..."/>
+        <button id="gobtn" onclick="run()">SCAN ▶</button>
+        <button id="github-btn" onclick="openOnGitHub()" style="display:none" title="open on GitHub">↗ GH</button>
+        <span id="add-bookmark-btn" onclick="toggleBookmarkCurrent()" title="bookmark this user" style="display:none">☆ USER</span>
+        <span id="star-repo-btn" onclick="toggleStarRepo()" title="star this repo" style="display:none">☆ REPO</span>
+      </div>
+      <div id="header-right">
+        <button id="settings-btn" onclick="toggleThemePanel()">⚙ SETTINGS</button>
+      </div>
+      <div id="nav-pills">
+        <span class="pill active" onclick="loadMainGalaxy()">◈ TRENDING</span>
+        <span class="pill" id="pill-user" style="display:none" onclick="loadUserGalaxy()">
+          <span id="pill-user-text">USER</span>
+        </span>
+      </div>
+      <div id="history-pills"></div>
+      <div id="status">▸ fetching trending developers...</div>
+    </div>
+
+    <!-- RATE LIMIT BANNER -->
+    <div id="rate-banner" style="display:none;position:absolute;top:0;left:0;right:0;background:rgba(160,35,20,0.97);backdrop-filter:blur(8px);border-bottom:1px solid #ff6040;font-family:Rajdhani,sans-serif;font-size:0.7rem;color:#ffe0d8;letter-spacing:0.05em;z-index:50;pointer-events:all">
+      <div style="display:flex;align-items:center;gap:0.8rem;padding:0.45rem 2.5rem 0.45rem 1.2rem;flex-wrap:wrap">
+        <span id="rate-title" style="color:#ff9070;font-weight:700;white-space:nowrap">⚠ RATE LIMIT</span>
+        <span id="rate-reset-msg" style="color:#ffb090;white-space:nowrap"><span id="rate-soon">resets soon</span></span>
+        <span style="color:#803020;flex:1;min-width:0"></span>
+        <a href="https://github.com/settings/tokens/new?description=OrbitView&scopes=public_repo,read:user" target="_blank"
+           style="color:#ffb0a0;text-decoration:none;border:1px solid #803020;padding:0.18rem 0.6rem;border-radius:2px;white-space:nowrap;font-size:0.65rem;letter-spacing:0.08em;transition:border-color 0.2s"
+           onmouseover="this.style.borderColor='#ff6040'" onmouseout="this.style.borderColor='#803020'">
+          <span id="rate-get-token">GET TOKEN ↗</span>
+        </a>
+        <button onclick="toggleTokenInput()"
+                style="background:transparent;border:1px solid #c85030;color:#ffb090;font-family:Orbitron,sans-serif;font-size:0.55rem;padding:0.18rem 0.65rem;cursor:pointer;border-radius:2px;letter-spacing:0.1em;transition:all 0.2s"
+                onmouseover="this.style.background='rgba(255,100,60,0.15)'" onmouseout="this.style.background='transparent'">
+          <span id="rate-import-btn">IMPORT TOKEN</span>
+        </button>
+      </div>
+      <div id="token-input-row" style="display:none;padding:0.4rem 1.2rem 0.5rem;border-top:1px solid rgba(255,96,64,0.25);align-items:center;gap:0.6rem;flex-wrap:wrap">
+        <span style="font-family:Orbitron,sans-serif;font-size:0.52rem;color:#ff9070;letter-spacing:0.1em;white-space:nowrap">
+          <span id="rate-token-label">TOKEN ▸</span>
+        </span>
+        <input id="token-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+               style="flex:1;min-width:180px;background:rgba(10,5,5,0.8);border:1px solid #803020;color:#ffe0d8;font-family:Rajdhani,sans-serif;font-size:0.72rem;padding:0.28rem 0.6rem;outline:none;border-radius:2px;letter-spacing:0.04em"
+               onfocus="this.style.borderColor='#ff6040'" onblur="this.style.borderColor='#803020'"/>
+        <button onclick="applyToken()"
+                style="background:rgba(200,80,48,0.3);border:1px solid #c85030;color:#ffb090;font-family:Orbitron,sans-serif;font-size:0.52rem;padding:0.28rem 0.75rem;cursor:pointer;border-radius:2px;letter-spacing:0.1em;white-space:nowrap"
+                onmouseover="this.style.background='rgba(200,80,48,0.55)'" onmouseout="this.style.background='rgba(200,80,48,0.3)'">
+          <span id="rate-apply-btn">APPLY ▶</span>
+        </button>
+        <button onclick="clearToken()" id="clear-token-btn"
+                style="display:none;background:transparent;border:1px solid #803020;color:#ff9070;font-family:Orbitron,sans-serif;font-size:0.52rem;padding:0.28rem 0.65rem;cursor:pointer;border-radius:2px;letter-spacing:0.1em;white-space:nowrap">
+          <span id="rate-clear-btn">CLEAR TOKEN</span>
+        </button>
+        <span id="token-status" style="font-size:0.65rem;color:#ff9070;letter-spacing:0.06em"></span>
+      </div>
+      <span onclick="document.getElementById('rate-banner').style.display='none';document.body.classList.remove('rate-active','rate-active-tall');document.getElementById('token-input-row').style.display='none'"
+            style="position:absolute;right:0.6rem;top:0.45rem;cursor:pointer;opacity:0.5;font-size:1rem;line-height:1;color:#ffb0a0"
+            onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">✕</span>
+    </div>
+
+    <div id="breadcrumb"></div>
+    <div id="hud-r"></div>
+    <div id="pause-badge">⏸ PAUSED · SPACE TO RESUME</div>
+
+    <!-- SEARCH OVERLAY -->
+    <div id="search-overlay">
+      <div id="search-bar">
+        <input id="galaxy-search" type="text" placeholder="search repos..."/>
+        <button onclick="clearGalaxySearch()">✕</button>
+      </div>
+      <div id="search-results"></div>
+      <div id="search-hint">ESC TO CLOSE · ENTER TO JUMP</div>
+    </div>
+
+    <!-- WARP TRANSITION -->
+    <div id="warp-overlay"></div>
+
+    <!-- LIVE EVENT FEED -->
+    <div id="event-feed"></div>
+
+    <!-- INFO PANEL -->
+    <div id="info-btn" onclick="toggleInfo()">ℹ <span id="info-btn-lbl">INFO</span></div>
+    <div id="info-panel">
+      <h3 id="info-panel-h">ℹ ABOUT STELLARMAP</h3>
+      <div class="info-section">
+        <div class="info-title" id="info-what-t">WHAT IS THIS?</div>
+        <div class="info-text" id="info-what-b">A 3D visualization of GitHub universes. Each <b>star</b> is a repo. Each <b>sun</b> is a contributor. Each <b>planet</b> is a file.</div>
+      </div>
+      <div class="info-section">
+        <div class="info-title" id="info-nav-t">HOW TO NAVIGATE</div>
+        <div class="info-text" id="info-nav-b"><b>Drag</b> to rotate · <b>Scroll</b> to zoom · <b>Click</b> stars to enter · <b>Click</b> suns to dive deeper</div>
+      </div>
+      <div class="info-section">
+        <div class="info-title" id="info-sess-t">CURRENT SESSION</div>
+        <div id="info-stats"></div>
+      </div>
+      <div class="info-section">
+        <div class="info-title" id="info-api-t">API STATUS</div>
+        <div id="info-api"></div>
+      </div>
+      <div class="info-section" style="padding-bottom:0.5rem">
+        <div class="info-title" id="info-built-t">BUILT WITH</div>
+        <div class="info-text" id="info-built-b">GitHub REST API · Vanilla JS · Canvas 2D · No frameworks</div>
+      </div>
+    </div>
+
+    <!-- BOOKMARKS PANEL -->
+    <div id="bookmarks-btn" onclick="toggleBookmarks()">☆ <span id="bookmarks-btn-lbl">SAVED</span></div>
+    <div id="bookmarks-panel">
+      <h3 id="bk-title">☆ BOOKMARKS</h3>
+      <div id="bk-list"></div>
+    </div>
+
+    <!-- KEYBOARD SHORTCUTS PANEL -->
+    <div id="shortcuts-btn" onclick="toggleShortcuts()">⌨ <span id="shortcuts-btn-lbl">KEYS</span></div>
+    <div id="shortcuts-panel">
+      <h3 id="sc-title">⌨ SHORTCUTS</h3>
+      <div class="sc-row"><span class="sc-key">F</span><span class="sc-desc" id="sc-f">search repos</span></div>
+      <div class="sc-row"><span class="sc-key">B</span><span class="sc-desc" id="sc-b">bookmarks</span></div>
+      <div class="sc-row"><span class="sc-key">ESC</span><span class="sc-desc" id="sc-esc">go back</span></div>
+      <div class="sc-row"><span class="sc-key">SPACE</span><span class="sc-desc" id="sc-space">pause orbits</span></div>
+      <div class="sc-row"><span class="sc-key">?</span><span class="sc-desc" id="sc-q">shortcuts</span></div>
+      <div class="sc-row"><span class="sc-key">H</span><span class="sc-desc" id="sc-h">clear history</span></div>
+      <div class="sc-row" id="sc-url-row"><span class="sc-key">U</span><span class="sc-desc" id="sc-u">copy share URL</span></div>
+      <div class="sc-row"><span class="sc-key">C</span><span class="sc-desc" id="sc-c">constellation lines</span></div>
+      <div class="sc-row"><span class="sc-key">Z</span><span class="sc-desc" id="sc-z">zoom in</span></div>
+      <div class="sc-row"><span class="sc-key">X</span><span class="sc-desc" id="sc-x">zoom out</span></div>
+      <span id="sc-close" style="display:block;margin-top:0.5rem;padding:0 0.8rem 0.2rem;font-family:Orbitron,sans-serif;font-size:0.44rem;color:var(--gray3);cursor:pointer" onclick="toggleShortcuts()">✕ CLOSE</span>
+    </div>
+
+  </div><!-- /#ui -->
+
+  <!-- SETTINGS / THEME PANEL -->
+  <div id="theme-panel">
+    <h3 id="tp-theme-h">◑ SELECT THEME</h3>
+    <div class="theme-opt" onclick="setTheme('cyber')" data-t="cyber">
+      <div class="theme-swatch" style="background:#5bc8f5"></div>
+      <span class="theme-label">CYBER BLUE</span>
+    </div>
+    <div class="theme-opt" onclick="setTheme('void')" data-t="void">
+      <div class="theme-swatch" style="background:#a078f5"></div>
+      <span class="theme-label">DEEP VOID</span>
+    </div>
+    <div class="theme-opt" onclick="setTheme('ember')" data-t="ember">
+      <div class="theme-swatch" style="background:#f58040"></div>
+      <span class="theme-label">EMBER</span>
+    </div>
+    <div class="theme-opt" onclick="setTheme('matrix')" data-t="matrix">
+      <div class="theme-swatch" style="background:#00ff41"></div>
+      <span class="theme-label">MATRIX</span>
+    </div>
+    <div class="theme-opt" onclick="setTheme('arctic')" data-t="arctic">
+      <div class="theme-swatch" style="background:#80c8f8"></div>
+      <span class="theme-label">ARCTIC</span>
+    </div>
+    <div class="theme-opt selected" onclick="setTheme('white')" data-t="white">
+      <div class="theme-swatch" style="background:#111;border:1px solid #444"></div>
+      <span class="theme-label">WHITE</span>
+    </div>
+    <div class="theme-opt theme-locked" data-t="creator">
+      <div class="theme-swatch" style="background:#ffd700"></div>
+      <span class="theme-label">GOLDEN</span>
+    </div>
+
+    <div style="border-top:1px solid var(--c3);margin:0.5rem 0"></div>
+
+    <h3 id="tp-icon-h" style="margin-bottom:0.45rem">◧ ICON PACK</h3>
+    <div class="icon-opt selected" onclick="setIconPack('geometric')" data-ip="geometric">
+      <span class="icon-preview">⬡ ▲ ◆ ◈</span>
+      <span class="theme-label">GEOMETRIC</span>
+    </div>
+    <div class="icon-opt" onclick="setIconPack('ascii')" data-ip="ascii">
+      <span class="icon-preview">[J] [T] /D/</span>
+      <span class="theme-label">ASCII</span>
+    </div>
+    <div class="icon-opt" onclick="setIconPack('orbital')" data-ip="orbital">
+      <span class="icon-preview">⊙ ⊕ ⊗ ⊛</span>
+      <span class="theme-label">ORBITAL</span>
+    </div>
+    <div class="icon-opt" onclick="setIconPack('cyber')" data-ip="cyber">
+      <span class="icon-preview">⟨J⟩ ⟦D⟧</span>
+      <span class="theme-label">CYBER</span>
+    </div>
+    <div class="icon-opt" onclick="setIconPack('minimal')" data-ip="minimal">
+      <span class="icon-preview">· · · ○</span>
+      <span class="theme-label">MINIMAL</span>
+    </div>
+
+    <div style="border-top:1px solid var(--c3);margin:0.5rem 0"></div>
+
+    <h3 id="tp-lang-h" style="margin-bottom:0.4rem">◉ LANGUAGE</h3>
+    <div id="tp-lang-container" style="display:flex;gap:6px;flex-wrap:wrap">
+    </div>
+
+    <div style="border-top:1px solid var(--c3);margin:0.5rem 0"></div>
+
+    <div id="reset-btn" onclick="resetEverything()"
+         style="display:flex;align-items:center;gap:8px;padding:0.3rem 0;cursor:pointer;border-radius:2px;transition:background 0.15s"
+         onmouseover="this.style.background='rgba(255,60,60,0.07)'" onmouseout="this.style.background='transparent'">
+      <span style="color:#ff6050;font-size:0.7rem">⊗</span>
+      <span class="theme-label" id="tp-reset-lbl" style="color:var(--gray2)">RESET EVERYTHING</span>
+    </div>
+    <span id="theme-close" onclick="toggleThemePanel()">✕ CLOSE</span>
+  </div>
+
+  <div id="creator-zone-badge">◈ CREATOR ZONE · OFFBRANDED</div>
+
+</div><!-- /#root -->
+
+<div id="tooltip"></div>
+
+<script src="js/i18n.js"></script>
+
+<!-- <script src="langs/language.js"></script> -->
+<script src="langs/en.js"></script>
+<script src="langs/es.js"></script>
+
+<!-- ── Main application ── -->
+<script src="js/app.js"></script>
+
+</body>
+</html>
