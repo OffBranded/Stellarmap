@@ -1,4 +1,4 @@
-# Stellarmap
+# [Stellarmap](https://offbranded.github.io/Stellarmap/)
 A 3D GitHub universe explorer. Search any user or org and watch their repositories orbit as stars, contributors as suns, and files as planets — all rendered in real time on an HTML5 canvas.
 
 ![themes](https://img.shields.io/badge/themes-7-blueviolet) ![langs](https://img.shields.io/badge/i18n-extensible-blue) ![vanilla](https://img.shields.io/badge/built%20with-vanilla%20JS-yellow)
