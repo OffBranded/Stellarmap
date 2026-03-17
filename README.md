@@ -3,6 +3,9 @@ A 3D GitHub universe explorer. Search any user or org and watch their repositori
 
 ![themes](https://img.shields.io/badge/themes-7-blueviolet) ![langs](https://img.shields.io/badge/i18n-extensible-blue) ![vanilla](https://img.shields.io/badge/built%20with-vanilla%20JS-yellow)
 
+![image1](https://raw.githubusercontent.com/OffBranded/Stellarmap/refs/heads/main/img/image%201.png)
+![image3](https://raw.githubusercontent.com/OffBranded/Stellarmap/refs/heads/main/img/image%202.png)
+
 ---
 
 ## Features
